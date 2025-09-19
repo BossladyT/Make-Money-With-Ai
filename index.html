@@ -11,33 +11,50 @@
 
 <style>
   :root{
-    --canva-1:#00f2fe;
-    --canva-2:#7b61ff;
-    --canva-3:#1abc9c;
-    --canva-4:#ffd54a;
+    --canva-1:#00f2fe;      /* teal-cyan */
+    --canva-2:#7b61ff;      /* purple */
+    --canva-3:#1abc9c;      /* teal */
+    --canva-4:#ffd54a;      /* vibrant yellow */
     --accent-dark:#0f1724;
     --glass-alpha: 0.15;
     --tab-scale: 1.02;
+    --meeting1-bg: #1abc9c;  /* teal base */
+    --meeting1-shadow: rgba(26, 188, 156, 0.6);
+    --meeting1-timer-color: #323952;
+    --meeting2-bg: #7b61ff;  /* bright green base */
+    --meeting2-shadow: rgba(123, 97, 255, 0.6);
+    --meeting2-timer-color: #1ed300;
+    --title-deepblue: #001f4d;
   }
+
+  /* Basic reset */
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
     min-height:100vh;
     color:var(--accent-dark);
-    font-family: 'Montserrat', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Montserrat', system-ui, -apple-system, "Segoe UI", Roboto, 'Noto Sans', sans-serif;
     overflow-x:hidden;
+    background:#fff;
   }
 
-  /* Background */
+  /* Liquid gradient background container (under canvas) */
   .bg-gradient {
     position:fixed; inset:0; z-index:-3;
     background: linear-gradient(-45deg, var(--canva-1), var(--canva-2), var(--canva-3), var(--canva-4));
     background-size:600% 600%;
     animation: bgMove 12s linear infinite;
   }
-  @keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  @keyframes bgMove{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
 
-  #aiCanvas{position:fixed; inset:0; z-index:-2; pointer-events:none;}
+  /* Canvas (particles + connecting lines) */
+  #aiCanvas{
+    position:fixed; inset:0; z-index:-2; pointer-events:none;
+  }
 
   /* Header */
   header{
@@ -48,105 +65,414 @@
     box-shadow: 0 6px 20px rgba(10,10,14,0.08);
   }
   .logo{font-family:'Noto Serif Display', serif; font-weight:700; font-size:1.35rem; color:var(--accent-dark)}
-  nav{display:flex;flex-wrap:wrap;gap:1rem;}
-  nav a{ text-decoration:none; color:var(--accent-dark); font-weight:600}
+  nav a{margin-left:1.25rem; text-decoration:none; color:var(--accent-dark); font-weight:600}
   nav a:hover{color:var(--canva-2)}
 
-  /* Countdown */
+  /* FOMO countdown */
   .fomo-timer{
     position:fixed; left:1rem; top:74px; z-index:25;
     background:linear-gradient(90deg,var(--canva-4),#fff9c4);
     padding:.5rem .9rem; border-radius:10px; font-weight:700; color:#111;
     box-shadow:0 6px 18px rgba(0,0,0,.12);
-    font-size:.9rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .fomo-flash {
+    font-weight: 900;
+    font-size: 0.9rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 6px;
+    background: linear-gradient(270deg, #ffd54a, #7b61ff, #1abc9c, #00f2fe);
+    background-size: 800% 800%;
+    animation: flashColors 3s ease infinite;
+    color: #00264d;
+    text-transform: uppercase;
+    box-shadow: 0 0 8px #ffd54a;
+  }
+  @keyframes flashColors {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position:0% 50%;}
   }
 
-  /* Sticky Tabs */
+  /* Sticky tabs (hidden initially) */
   .sticky-tabs{
     position:fixed; right:18px; top:96px; z-index:28; display:flex; flex-direction:column; gap:12px;
     transform:translateX(10px) translateY(-6px); opacity:0; pointer-events:none;
     transition:all .55s cubic-bezier(.2,.9,.3,1);
   }
   .sticky-tabs.show{ transform:translateX(0) translateY(0); opacity:1; pointer-events:auto; }
+
   .sticky-tab{
-    min-width:200px; padding:.75rem 1rem; border-radius:999px; font-weight:800;
+    min-width:220px; padding:.75rem 1rem; border-radius:999px; font-weight:800;
     text-align:center; text-decoration:none; color:#000; display:inline-block;
     box-shadow:0 10px 30px rgba(0,0,0,.12);
     background: linear-gradient(90deg, var(--canva-1), var(--canva-2));
-    background-size:200% 200%; animation: tabGlow 5s linear infinite;
+    background-size:200% 200%;
+    animation: tabGlow 5s linear infinite;
+    transform-origin:center;
   }
+  .sticky-tab.big{ min-width:240px; font-size:1rem }
   .sticky-tab:hover{ transform:scale(var(--tab-scale)); }
-  @keyframes tabGlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
+  @keyframes tabGlow{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  /* Main content wrapper */
   main{ max-width:1200px; margin:0 auto; padding:2.5rem 1.25rem 6rem; position:relative; z-index:2;}
 
   /* Hero */
   .hero{ display:grid; grid-template-columns:1fr 420px; gap:2rem; align-items:center; margin-top:1rem; }
   .hero-left{text-align:center}
-  .portrait-photo{ width:250px; height:340px; object-fit:cover; border-radius:12px; border:4px solid rgba(255,255,255,0.8); margin:0 auto .9rem; }
+  .portrait-photo{ width:250px; height:340px; object-fit:cover; border-radius:12px; border:4px solid rgba(255,255,255,0.8);
+    box-shadow: 0 15px 40px rgba(12,12,20,0.12); margin:0 auto .9rem; transition:transform .35s; }
+  .portrait-photo:hover{ transform:scale(1.03) }
+
   .hero-left h1{ font-family:'Noto Serif Display'; font-size:2.4rem; margin-bottom:.25rem;}
   .hero-left h2{ color:var(--canva-1); font-weight:700; margin-bottom:1rem}
-  .hero-left p{ max-width:520px; margin:0 auto; font-size:1.05rem; line-height:1.55; }
+  .hero-left p{ max-width:520px; margin:0 auto; font-size:1.05rem; line-height:1.55; color: #0b0b0b; }
 
-  .hero-right{ display:flex; align-items:center; justify-content:center; }
-  .card{background:rgba(255,255,255,0.96); border-radius:18px; padding:2rem; width:100%; max-width:420px; box-shadow:0 30px 70px rgba(12,12,20,0.10);}
+  /* Right side form card */
+  .hero-right{
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+    border-radius:18px; padding:2rem; width:100%; max-width:420px;
+    box-shadow:0 30px 70px rgba(12,12,20,0.10); opacity:0; transform:translateY(30px);
+    transition:all .9s cubic-bezier(.2,.9,.3,1);
+  }
+  .card.visible{ opacity:1; transform:translateY(0) }
   .card h3{ font-family:'Noto Serif Display'; margin-bottom:.4rem}
   .subheadline{ color:var(--canva-1); margin-bottom:1rem; font-weight:700}
+
   form{ display:flex; flex-direction:column; gap:12px; width:100%}
-  select, .btn{padding:.8rem 1rem; border-radius:999px; font-weight:700;}
-  .btn{cursor:pointer; border:none; background:linear-gradient(90deg,var(--canva-1),var(--canva-2)); color:#000}
+  select{ padding:.8rem 1rem; border-radius:999px; border:2px solid rgba(10,10,12,0.08); font-weight:700; outline:none }
+  select:focus{ box-shadow:0 0 12px rgba(10,10,20,0.06); border-color:var(--canva-1)}
+  .btn{ padding:.95rem 1rem; border-radius:999px; font-weight:900; cursor:pointer; border:none;
+    background: linear-gradient(90deg,var(--canva-1),var(--canva-2)); color:#000; box-shadow:0 12px 30px rgba(11,13,20,0.12); text-transform:uppercase}
+  .btn:hover{ transform:translateY(-3px) scale(1.01) }
 
-  /* Info Tabs */
+  /* Info / Big tab row */
   .info-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:18px; margin:2.3rem 0; align-items:center}
-  .info-tab{ min-width:260px; padding:1rem; border-radius:18px; text-align:center; font-weight:800; color:#000; background:linear-gradient(90deg,var(--canva-4),#fff3b0);}
-  
-  /* Benefits */
-  .benefits{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:1.6rem;}
-  .benefit-item{ background: linear-gradient(135deg,#ffb3c6,#ffd6a5,#a0f0e6); padding:1.25rem; border-radius:18px; font-weight:800; text-align:center;}
+  .info-tab{
+    min-width:280px; padding:1.1rem 1.25rem; border-radius:18px; text-align:center; font-weight:800;
+    color:#000; background:linear-gradient(90deg,var(--canva-4),#fff3b0);
+    box-shadow:0 18px 40px rgba(6,6,10,0.10); cursor:pointer; transition:all .35s;
+  }
+  .info-tab.large{ min-width:520px; font-size:1.05rem}
+  .info-tab:hover{ transform:translateY(-8px); filter:brightness(1.03) }
 
-  /* Logos */
+  /* Floating benefits grid */
+  .benefits{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:1.6rem; align-items:stretch}
+  .benefit-item{
+    background: linear-gradient(135deg,#ffb3c6,#ffd6a5,#a0f0e6);
+    padding:1.25rem; border-radius:18px; font-weight:800; text-align:center; color:#012;
+    box-shadow:0 12px 30px rgba(0,0,0,0.09);
+    transform-origin:center; animation: floatY 4.5s ease-in-out infinite;
+    transition: all .28s;
+  }
+  .benefit-item:nth-child(odd){ animation-delay:.15s }
+  .benefit-item:nth-child(even){ animation-delay:.35s }
+  @keyframes floatY{ 0%{transform:translateY(0)} 50%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+  .benefit-item:hover{ background: linear-gradient(90deg,#1abc9c,#00f2fe); color:#012; transform:translateY(-12px) scale(1.02); box-shadow:0 18px 36px rgba(0,0,0,0.15) }
+
+  /* Logos carousel */
   .partner-brands{ margin:2.5rem 0; text-align:center }
-  .logo-track{ display:flex; gap:40px; animation:scrollLogos 20s linear infinite; }
-  .logo-track img{ height:70px; width:auto; }
-  @keyframes scrollLogos{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .partner-brands h3{ font-family:'Noto Serif Display'; color:#fff; font-size:1.55rem; margin-bottom:1rem; text-shadow:0 6px 20px rgba(0,0,0,0.25) }
+  .logo-track{ display:flex; gap:40px; align-items:center; animation:scrollLogos 20s linear infinite }
+  .logo-track img{ height:70px; width:auto; filter: drop-shadow(0 6px 20px rgba(0,0,0,.15)); transition:transform .25s }
+  .logo-track img:hover{ transform:scale(1.08) }
+  @keyframes scrollLogos{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
   /* Testimonials */
   .testimonials-wrap{ overflow:hidden; margin-top:2rem }
   .testimonial-track{ display:flex; gap:20px; animation:scrollTestimonials 26s linear infinite }
-  .testimonial-card{ min-width:280px; background:rgba(255,255,255,0.92); padding:1rem; border-radius:12px; text-align:center}
-  @keyframes scrollTestimonials{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .testimonial-card{ min-width:300px; background:rgba(255,255,255,0.92); padding:1rem; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08); text-align:center}
+  .testimonial-flag{ width:28px; height:auto; border-radius:4px; display:block; margin:0 auto .4rem}
+  .stars{ color:#FFD700; margin-bottom:.4rem; font-size:1.05rem }
+  @keyframes scrollTestimonials{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-  /* CTA */
-  .sticky-cta{ position:fixed; right:20px; bottom:22px; z-index:30; padding:.9rem 1.2rem; border-radius:28px; background:linear-gradient(90deg,var(--canva-1),var(--canva-2)); color:#000; font-weight:900; }
+  /* Sticky CTA bottom */
+  .sticky-cta{ position:fixed; right:20px; bottom:22px; z-index:30; padding:.9rem 1.2rem; border-radius:28px; background:linear-gradient(90deg,var(--canva-1),var(--canva-2)); color:#000; font-weight:900; box-shadow:0 20px 50px rgba(0,0,0,0.14) }
 
+  /* Footer */
   footer{ margin-top:3.5rem; padding:2.2rem; text-align:center; background:linear-gradient(135deg,var(--canva-2),var(--canva-3)); color:#fff }
   footer .footer-links{ display:flex; gap:18px; justify-content:center; margin:.7rem 0; font-size:1.5rem }
+  footer p.small{ opacity:.95; font-weight:700; margin-top:1rem }
 
-  /* Responsive Tweaks */
+  /* Responsive */
   @media(max-width:1024px){
-    .hero{ grid-template-columns:1fr; text-align:center; }
-    .hero-right{margin-top:1.5rem;}
+    .hero{ grid-template-columns: 1fr 380px; gap:1.1rem }
+    .portrait-photo{ width:210px; height:290px }
+    .info-tab.large{ min-width:420px }
   }
   @media(max-width:760px){
-    nav{flex-direction:column;gap:.5rem;}
-    .benefits{grid-template-columns:repeat(2,1fr);}
-    .logo-track img{height:56px;}
+    .hero{ grid-template-columns:1fr; padding-top:1rem }
+    .logo-track img{ height:56px }
+    .card{max-width:100%}
+    .benefits{ grid-template-columns: repeat(2,1fr) }
+    .sticky-tabs{ right:12px; top:86px }
+    .sticky-tab{ min-width:170px; font-size:.92rem }
   }
-  @media(max-width:480px){
-    .benefits{grid-template-columns:1fr;}
-    .portrait-photo{width:180px;height:240px;}
-    .logo-track img{height:44px;}
-    .sticky-tab{min-width:150px;font-size:.85rem;}
-    .fomo-timer{font-size:.8rem;left:.5rem;}
+  @media(max-width:440px){
+    .benefits{ grid-template-columns:1fr }
+    .portrait-photo{ width:180px; height:240px }
+    .logo-track img{ height:48px }
   }
+
+  /* Meetings section styles */
+  #meetingsSection {
+    background: rgba(123, 97, 255, 0.15);
+    border-radius: 18px;
+    margin: 3rem auto 5rem;
+    max-width: 680px;
+    padding: 2.8rem 3rem 3rem;
+    box-shadow: 0 25px 55px rgba(123, 97, 255, 0.21);
+    color: var(--accent-dark);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  #meetingsSection h2 {
+    font-family: 'Noto Serif Display', serif;
+    margin-bottom: 0.8rem;
+    font-size: 2.15rem;
+    color: var(--title-deepblue);
+    font-weight: 900;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+  }
+
+  #meetingsSection p {
+    margin-bottom: 2rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--accent-dark);
+  }
+
+  .meeting-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: nowrap;
+    margin-bottom: 2.7rem;
+  }
+
+  .meeting-tab {
+    position: relative;
+    border-radius: 18px;
+    padding: 2rem 2.2rem 2.6rem;
+    width: 320px;
+    box-shadow: 0 12px 35px rgba(0, 255, 255, 0.3);
+    color: white;
+    font-weight: 700;
+    font-size: 1.03rem;
+    letter-spacing: 0.04em;
+    box-sizing: border-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: floatGlow 3.6s ease-in-out infinite;
+  }
+  .meeting-tab:hover {
+    transform: scale(1.06);
+    box-shadow: 0 22px 70px rgba(0, 255, 255, 0.7);
+  }
+
+  /* Meeting 1 styles */
+  #meeting1-tab {
+    background: linear-gradient(135deg, var(--meeting1-bg), var(--canva-3));
+    padding: 0.3rem 1rem;
+    border-radius: 24px;
+    font-size: 1.4rem;
+    box-shadow: 0 0 15px var(--meeting1-shadow);
+    display: inline-block;
+  }
+  #meeting1-tab,
+  #meeting1-tab strong {
+    color: blue green;
+    font-weight: 900;
+  }
+  #meeting1-tab + div {
+    margin-bottom: 18px;
+  }
+
+  /* Glass-like timer container with animated gradient */
+  .countdown-glass {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3.2rem;
+    font-weight: 900;
+    padding: 0.5rem 1.6rem;
+    border-radius: 24px;
+    background: linear-gradient(270deg, #10dee1, #00dbbe, #00f5a8, #00f1db);
+    background-size: 400% 400%;
+    animation: gradientMove 8s ease infinite;
+    color: var(--meeting1-timer-color);
+    box-shadow:
+      0 0 15px rgba(16,222,225,0.7),
+      0 0 35px rgba(16,222,225,0.45);
+    display: inline-flex;
+    gap: 0.8rem;
+    justify-content: center;
+    align-items: baseline;
+  }
+  .countdown-glass span.unit {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  /* Meeting 2 styles */
+  #meeting2-tab {
+    background: linear-gradient(135deg, var(--meeting2-bg), var(--canva-2));
+    padding: 0.3rem 1rem;
+    border-radius: 24px;
+    font-size: 1.4rem;
+    box-shadow: 0 0 15px var(--meeting2-shadow);
+    display: inline-block;
+  }
+  #meeting2-tab,
+  #meeting2-tab strong {
+    color: blue green;
+    font-weight: 900;
+  }
+  #meeting2-tab + div {
+    margin-bottom: 18px;
+  }
+  /* Glass-like timer for meeting 2 */
+  .countdown-glass-2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3.2rem;
+    font-weight: 900;
+    padding: 0.5rem 1.6rem;
+    border-radius: 24px;
+    background: linear-gradient(270deg, #9e84ff, #a09cff, #d8cafc, #b6abff);
+    background-size: 400% 400%;
+    animation: gradientMove 8s ease infinite;
+    color: var(--meeting2-timer-color);
+    box-shadow:
+      0 0 15px rgba(158,132,255,0.7),
+      0 0 35px rgba(158,132,255,0.45);
+    display: inline-flex;
+    gap: 0.8rem;
+    justify-content: center;
+    align-items: baseline;
+  }
+  .countdown-glass-2 span.unit {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  @keyframes gradientMove {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  .meeting-time-info {
+    font-size: 1.05rem;
+    margin-bottom: 0.85rem;
+    font-weight: 700;
+  }
+
+  .current-time {
+    font-weight: 400;
+    font-size: 0.925rem;
+    opacity: 0.9;
+    margin-bottom: 0.35rem;
+  }
+
+  /* 'Meeting starts in' label */
+  .meeting-starts-in {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    color: white;
+    text-shadow: 0 0 6px rgba(0,0,0,0.4);
+  }
+
+  /* Join button */
+  #meetingsSection .join-btn {
+    background: linear-gradient(90deg, var(--canva-2), var(--canva-1));
+    color: var(--accent-dark);
+    font-weight: 700;
+    padding: 1rem 2.6rem;
+    font-size: 1.3rem;
+    border-radius: 30px;
+    box-shadow: 0 18px 70px rgba(123, 97, 255, 0.55);
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 0.6rem;
+    transition: background-color 0.35s ease;
+  }
+
+  #meetingsSection .join-btn:hover {
+    background: linear-gradient(90deg, var(--canva-1), var(--canva-3));
+    color: #02323e;
+    box-shadow: 0 24px 70px rgba(0, 255, 255, 0.9);
+  }
+
+  /* Floating glow animation */
+  @keyframes floatGlow {
+    0%,100% {
+      transform: translateY(0);
+      box-shadow: 0 12px 35px rgba(0, 255, 255, 0.3);
+    }
+    50% {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 50px rgba(0, 255, 255, 0.7);
+    }
+  }
+
+  /* Section heading above testimonials */
+  #testimonialIntro {
+    max-width: 770px;
+    margin: 3rem auto 1rem;
+    font-family: 'Noto Serif Display', serif;
+    font-weight: 700;
+    font-size: 1.95rem;
+    color: var(--title-white);
+    text-align: center;
+    text-shadow: 1px 1px 6px rgba(0,0,0,0.12);
+  }
+
+  /* Responsive adjustments */
+  @media(max-width:720px){
+    main{ padding:2rem 1rem 5rem;}
+    #meetingsSection {
+      max-width: 95vw;
+      padding: 2rem 1.5rem;
+      margin: 2rem auto 4rem;
+    }
+    .meeting-tabs {
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+    .meeting-tab {
+      width: 100%;
+      max-width: 430px;
+      margin-left: auto;
+      margin-right: auto;
+      animation-name: none !important;
+      box-shadow: none !important;
+    }
+    /* Make timers slightly smaller on mobile */
+    .countdown-glass,
+    .countdown-glass-2 {
+      font-size: 2.4rem !important;
+    }
+  }
+
 </style>
 </head>
 <body>
-  <!-- Background -->
-  <div class="bg-gradient"></div>
-  <canvas id="aiCanvas"></canvas>
 
-  <!-- Header -->
+  <div class="bg-gradient" aria-hidden="true"></div>
+  <canvas id="aiCanvas" aria-hidden="true"></canvas>
+
   <header>
     <div class="logo">Voidara</div>
     <nav>
@@ -156,88 +482,372 @@
     </nav>
   </header>
 
-  <!-- Countdown -->
-  <div class="fomo-timer" id="countdown">Offer ends in: 02:15:30</div>
+  <div class="fomo-timer" id="countdown">
+    Offer ends in: 02:15:30
+    <div class="fomo-flash" aria-live="assertive" aria-atomic="true">Secure your Spot Now</div>
+  </div>
 
-  <!-- Sticky Tabs -->
-  <div class="sticky-tabs" id="stickyTabs">
-    <a class="sticky-tab" href="https://youtu.be/nyGODf2hpMw" target="_blank">STOP &amp; WATCH NOW</a>
-    <a class="sticky-tab" href="https://partner.voidara.ai/register?ref=your-ai-assistant" target="_blank">BUSINESS BUILDER</a>
-    <a class="sticky-tab" href="https://partner.voidara.ai/join/XXPZwH42R1Jh" target="_blank">FREE AI AGENT</a>
+  <div class="sticky-tabs" id="stickyTabs" aria-hidden="true">
+    <a class="sticky-tab large" id="stopWatch" href="https://youtu.be/nyGODf2hpMw" target="_blank" rel="noopener">STOP &amp; WATCH NOW</a>
+    <a class="sticky-tab" id="builder" href="https://partner.voidara.ai/register?ref=your-ai-assistant" target="_blank" rel="noopener">BUSINESS BUILDER PROGRAM</a>
+    <a class="sticky-tab" id="agent" href="https://partner.voidara.ai/join/XXPZwH42R1Jh" target="_blank" rel="noopener">GRAB FREE AI AGENT</a>
   </div>
 
   <main>
-    <!-- Hero -->
     <section class="hero" id="hero">
       <div class="hero-left">
-        <img src="https://i.imgur.com/9iwfGFt.jpeg" alt="Tricia Toykam" class="portrait-photo">
+        <img src="https://i.imgur.com/9iwfGFt.jpeg" alt="Tricia Toykam" class="portrait-photo" />
         <h1>Work with Ms Tricia Toy Kam</h1>
-        <h2>Marketing Specialist, Team Lead & Coach</h2>
-        <p>I’ve spent over a decade helping businesses and individuals grow through smart marketing, leadership, and sales.</p>
+        <h2>Marketing Specialist, Team Lead &amp; Transformational Coach</h2>
+        <p>I’ve spent over a decade helping businesses and individuals grow through smart marketing, leadership, and sales. My passion is showing everyday people how to tap into opportunities without overwhelm.</p>
       </div>
+
       <div class="hero-right">
-        <div class="card">
+        <div class="card" id="leadCard">
           <h3>Discover Voidara AI Agents</h3>
-          <div class="subheadline">Answer 3 quick questions to see if this is right for you.</div>
-          <form>
-            <select required><option>Which industry?</option><option>Network Marketing</option><option>Corporate</option><option>Other</option></select>
-            <select required><option>Biggest challenge?</option><option>Leads</option><option>Team Growth</option><option>Marketing Skills</option></select>
-            <select required><option>When start?</option><option>Immediately</option><option>1 month</option><option>Not sure</option></select>
+          <div class="subheadline">Answer 3 quick questions to see if this business is right for you.</div>
+          <form id="leadForm" aria-label="Qualification form">
+            <select name="industry" required aria-required="true">
+              <option value="">Which industry are you in?</option>
+              <option>Network Marketing</option>
+              <option>Corporate</option>
+              <option>Entrepreneur</option>
+            </select>
+            <select name="challenge" required aria-required="true">
+              <option value="">What is your biggest challenge?</option>
+              <option>Lead Generation</option>
+              <option>Finances</option>
+              <option>Marketing Skills</option>
+            </select>
+            <select name="start" required aria-required="true">
+              <option value="">How soon do you want to start?</option>
+              <option>Immediately</option>
+              <option>Within 1 month</option>
+              <option>Not sure</option>
+            </select>
             <button class="btn" type="submit">Get Access</button>
           </form>
         </div>
       </div>
     </section>
 
-    <!-- Info Row -->
-    <div class="info-row">
-      <div class="info-tab" onclick="window.open('https://youtu.be/nyGODf2hpMw','_blank')">STOP &amp; WATCH — Business Plan</div>
-      <div class="info-tab" onclick="window.open('https://partner.voidara.ai/register?ref=your-ai-assistant','_blank')">BUSINESS BUILDER</div>
-      <div class="info-tab" onclick="window.open('https://partner.voidara.ai/join/XXPZwH42R1Jh','_blank')">FREE AI AGENT</div>
+    <!-- Meetings Section -->
+    <section id="meetingsSection" aria-label="Daily Voidara Opportunity Meetings">
+      <h2>Daily Voidara Business Meetings</h2>
+      <p>Join us live via MeetN App to explore how Ai Agents are helping our partners earn money and save time:</p>
+
+      <div class="meeting-tabs" role="tablist">
+
+        <article class="meeting-tab" role="tabpanel" aria-labelledby="meeting1-tab" style="background: linear-gradient(135deg, var(--meeting1-bg), var(--canva-3)); box-shadow: 0 20px 50px var(--meeting1-shadow); color: white;">
+          <strong id="meeting1-tab">Meeting 1</strong>
+          <div class="meeting-time-info">3pm South Africa &nbsp;/&nbsp; 9am Trinidad & Tobago</div>
+          <div class="meeting-starts-in">Meeting starts in</div>
+          <div id="countdown1" class="countdown-glass" aria-live="polite" aria-atomic="true">Loading...</div>
+          <div class="current-time">Current time SA (CET): <span id="currentTimeSA1">--:--:--</span></div>
+          <div class="current-time">Current time TT (AST): <span id="currentTimeTT1">--:--:--</span></div>
+        </article>
+
+        <article class="meeting-tab" role="tabpanel" aria-labelledby="meeting2-tab" style="background: linear-gradient(135deg, var(--meeting2-bg), var(--canva-2)); box-shadow: 0 20px 50px var(--meeting2-shadow); color: white;">
+          <strong id="meeting2-tab">Meeting 2</strong>
+          <div class="meeting-time-info">7pm South Africa &nbsp;/&nbsp; 1pm Trinidad & Tobago </div>
+          <div class="meeting-starts-in">Meeting starts in</div>
+          <div id="countdown2" class="countdown-glass-2" aria-live="polite" aria-atomic="true">Loading...</div>
+          <div class="current-time">Current time SA (CET): <span id="currentTimeSA2">--:--:--</span></div>
+          <div class="current-time">Current time TT (AST): <span id="currentTimeTT2">--:--:--</span></div>
+        </article>
+
+      </div>
+
+      <a href="https://meetn.com/teamattraction" target="_blank" rel="noopener" class="join-btn" aria-label="Join Business Opportunity Meetings on MeetN App">CLICK HERE to join MeetN</a>
+    </section>
+
+    <!-- Info / Big tab row -->
+    <div class="info-row" aria-hidden="false">
+      <div class="info-tab large" role="button" onclick="window.open('https://youtu.be/nyGODf2hpMw','_blank')">STOP &amp; WATCH NOW — Voidara Business Plan</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="info-tab" role="button" onclick="window.open('https://partner.voidara.ai/register?ref=your-ai-assistant','_blank')">BUSINESS BUILDER PROGRAM</div>
+        <div class="info-tab" role="button" onclick="window.open('https://partner.voidara.ai/join/XXPZwH42R1Jh','_blank')">GRAB FREE AI AGENT</div>
+      </div>
     </div>
 
     <!-- Benefits -->
-    <section id="benefits" class="benefits">
-      <div class="benefit-item">20% Direct Bonus</div>
-      <div class="benefit-item">20% Matching Bonus</div>
-      <div class="benefit-item">10% Binary Bonus</div>
-      <div class="benefit-item">20% Agent Bonus</div>
-      <div class="benefit-item">10% Profit Pool</div>
-      <div class="benefit-item">30% Subscription</div>
+    <section id="benefits" class="benefits" aria-label="Benefits">
+      <div style="grid-column:1 / -1; text-align:center; margin-bottom:8px;">
+        <h2 style="color:#fff; font-family:'Noto Serif Display';">Earn as a Voidara Partner</h2>
+      </div>
+
+      <div class="benefit-item"><i class="fas fa-dollar-sign" style="display:block;margin-bottom:.45rem"></i>20% Direct Bonus</div>
+      <div class="benefit-item"><i class="fas fa-handshake" style="display:block;margin-bottom:.45rem"></i>20% Matching Bonus</div>
+      <div class="benefit-item"><i class="fas fa-project-diagram" style="display:block;margin-bottom:.45rem"></i>10% Binary Bonus</div>
+      <div class="benefit-item"><i class="fas fa-user-plus" style="display:block;margin-bottom:.45rem"></i>20% Agent Bonus</div>
+      <div class="benefit-item"><i class="fas fa-globe" style="display:block;margin-bottom:.45rem"></i>10% Profit Pool Bonus</div>
+      <div class="benefit-item"><i class="fas fa-gem" style="display:block;margin-bottom:.45rem"></i>30% Subscription Bonus</div>
     </section>
 
-    <!-- Logos -->
-    <section class="partner-brands">
+    <!-- Partner logos carousel -->
+    <section class="partner-brands" aria-label="Trusted Partners">
       <h3>340+ Trusted Brand Partners</h3>
-      <div class="logo-track">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" />
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" alt="Nike" />
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="Uber" />
+      <div class="logo-track" aria-hidden="true" style="overflow:hidden;">
+        <div class="logo-track" style="display:flex; gap:40px; width:200%; align-items:center;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" alt="Nike" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="Uber" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" alt="Nike" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="Uber" />
+        </div>
       </div>
     </section>
 
-    <!-- Testimonials -->
-    <section id="testimonials" class="testimonials-wrap">
-      <div class="testimonial-track">
-        <div class="testimonial-card">"Voidara is life changing!"</div>
-        <div class="testimonial-card">"My team earns passive income."</div>
-        <div class="testimonial-card">"I love the tools and the plan."</div>
+    <!-- Testimonials Section (with heading above) -->
+    <h2 id="testimonialIntro">What others are saying about us</h2>
+    <section id="testimonials" class="testimonials-wrap" aria-label="Testimonials">
+      <div class="testimonial-track" aria-hidden="true">
+        <div class="testimonial-card" style="min-width:300px;">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/za.png" alt="South Africa flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Malikah</h4>
+          <div style="font-weight:700; opacity:.9">South Africa</div>
+          <p style="margin-top:.6rem">"Voidara is life changing, the tools are awesome! I especially love Dara Ai."</p>
+        </div>
+
+        <div class="testimonial-card">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/so.png" alt="Somalia flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Omar</h4>
+          <div style="font-weight:700; opacity:.9">Somalia</div>
+          <p style="margin-top:.6rem">"I am pleased with Voidara, it continues to earn my team and I passive income."</p>
+        </div>
+
+        <div class="testimonial-card">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/tt.png" alt="Trinidad & Tobago flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Noel</h4>
+          <div style="font-weight:700; opacity:.9">Trinidad & Tobago</div>
+          <p style="margin-top:.6rem">"Voidara is a unique network marketing model, I absolutely love the tools and the plan."</p>
+        </div>
+
+        <div class="testimonial-card" style="min-width:300px;">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/za.png" alt="South Africa flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Malikah</h4>
+          <div style="font-weight:700; opacity:.9">South Africa</div>
+          <p style="margin-top:.6rem">"Voidara is life changing, the tools are awesome! I especially love Dara Ai."</p>
+        </div>
+
+        <div class="testimonial-card">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/so.png" alt="Somalia flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Omar</h4>
+          <div style="font-weight:700; opacity:.9">Somalia</div>
+          <p style="margin-top:.6rem">"I am pleased with Voidara, it continues to earn my team and I passive income."</p>
+        </div>
+
+        <div class="testimonial-card">
+          <img class="testimonial-flag" src="https://flagcdn.com/w40/tt.png" alt="Trinidad & Tobago flag" />
+          <div class="stars">★★★★★</div>
+          <h4 style="margin:.4rem 0">Noel</h4>
+          <div style="font-weight:700; opacity:.9">Trinidad & Tobago</div>
+          <p style="margin-top:.6rem">"Voidara is a unique network marketing model, I absolutely love the tools and the plan."</p>
+        </div>
       </div>
     </section>
+
   </main>
 
-  <!-- CTA -->
   <button class="sticky-cta" onclick="window.open('https://partner.voidara.ai/register?ref=your-ai-assistant','_blank')">Join Now</button>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-links">
-      <a href="mailto:triciatoykam@gmail.com"><i class="fas fa-envelope"></i></a>
-      <a href="https://wa.me/18683719412"><i class="fab fa-whatsapp"></i></a>
-      <a href="https://www.instagram.com/bosslady_toykam"><i class="fab fa-instagram"></i></a>
-      <a href="https://www.tiktok.com/@triciatoykam"><i class="fab fa-tiktok"></i></a>
+  <div id="exitPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:60; max-width:520px;">
+    <div style="background:rgba(255,255,255,0.98); border-radius:18px; padding:1.6rem; box-shadow:0 30px 80px rgba(0,0,0,0.25); text-align:center;">
+      <button aria-label="Close popup" onclick="closePopup()" style="position:absolute; right:14px; top:10px; border:none; background:transparent; font-size:22px; cursor:pointer;">×</button>
+      <h3 style="font-family:'Noto Serif Display'; margin-bottom:.4rem">Wait — Watch this first</h3>
+      <p style="margin-bottom:1rem; font-weight:700">See Dara AI in action — then decide.</p>
+      <div style="display:flex; gap:10px; justify-content:center; margin-top:8px;">
+        <a class="sticky-tab" style="min-width:170px" href="https://www.tiktok.com/@triciatoykam/video/7550865712668101893" target="_blank">Watch TikTok Video</a>
+      </div>
     </div>
-    <p>© 2025 Voidara AI Agents</p>
+  </div>
+
+  <footer>
+    <div class="footer-links" style="display:flex; gap:18px; justify-content:center; align-items:center;">
+      <a href="mailto:triciatoykam@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      <a href="https://wa.me/18683719412" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/bosslady_toykam" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.tiktok.com/@triciatoykam" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+    </div>
+    <p class="small" style="margin-top:1rem">© 2025 Voidara AI Agents — Work with Trish</p>
   </footer>
+
+<script>
+  /* Particles + connecting lines */
+  (function(){
+    const canvas = document.getElementById('aiCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    const particleCount = Math.max(60, Math.floor(width/16));
+    const particles = [];
+    function rand(min,max){ return Math.random()*(max-min)+min }
+    for(let i=0;i<particleCount;i++){
+      particles.push({
+        x: rand(0,width),
+        y: rand(0,height),
+        vx: rand(-0.4,0.4),
+        vy: rand(-0.3,0.6),
+        r: rand(1.5,3.2),
+        alpha: rand(0.45,0.95)
+      });
+    }
+    function resize(){
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    function draw(){
+      ctx.clearRect(0,0,width,height);
+      for(let i=0;i<particles.length;i++){
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        if(p.x < -20) p.x = width + 20;
+        if(p.x > width + 20) p.x = -20;
+        if(p.y < -20) p.y = height + 20;
+        if(p.y > height + 20) p.y = -20;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255, ${p.alpha * 0.85})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+        for(let j=i+1;j<particles.length;j++){
+          const q = particles[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < 140){
+            const lineAlpha = (1 - dist/140) * 0.22;
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(255,255,255,${lineAlpha})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(p.x,p.y);
+            ctx.lineTo(q.x,q.y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* Show sticky tabs after scroll */
+  (function(){
+    const sticky = document.getElementById('stickyTabs');
+    const card = document.getElementById('leadCard');
+    function onScroll(){
+      const sc = window.scrollY || window.pageYOffset;
+      if(sc > 160){
+        sticky.classList.add('show');
+      } else {
+        sticky.classList.remove('show');
+      }
+      if(card){
+        const rect = card.getBoundingClientRect();
+        if(rect.top < window.innerHeight - 80) card.classList.add('visible');
+      }
+    }
+    window.addEventListener('scroll', onScroll);
+    window.addEventListener('load', onScroll);
+  })();
+
+  /* Countdown timer (Offer 15 mins) */
+  (function(){
+    const countdownEl = document.getElementById('countdown');
+    let target = Date.now() + (15*60*1000);
+    function tick(){
+      const now = Date.now();
+      let diff = Math.max(0, Math.floor((target - now)/1000));
+      const m = Math.floor(diff/60);
+      const s = diff % 60;
+      countdownEl.textContent = `Secure your Spot Now: ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if(diff <= 0) return;
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+
+  /* Meeting timers */
+  function pad(num) {
+    return num.toString().padStart(2, '0');
+  }
+  function formatTime(date) {
+    return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+  }
+  function convertToOffset(date, offsetHours) {
+    let utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * offsetHours));
+  }
+  function updateMeetingTimes() {
+    const now = new Date();
+    const nowCET = convertToOffset(now, 2);
+    const nowAST = convertToOffset(now, -4);
+
+    document.getElementById('currentTimeSA1').textContent = formatTime(nowCET);
+    document.getElementById('currentTimeTT1').textContent = formatTime(nowAST);
+    document.getElementById('currentTimeSA2').textContent = formatTime(nowCET);
+    document.getElementById('currentTimeTT2').textContent = formatTime(nowAST);
+
+    let meeting1 = new Date(nowCET);
+    meeting1.setHours(15,0,0,0);
+    let meeting2 = new Date(nowCET);
+    meeting2.setHours(19,0,0,0);
+
+    let diff1 = meeting1 - nowCET;
+    if(diff1 < 0) {
+      meeting1.setDate(meeting1.getDate() + 1);
+      diff1 = meeting1 - nowCET;
+    }
+    let diff2 = meeting2 - nowCET;
+    if(diff2 < 0) {
+      meeting2.setDate(meeting2.getDate() + 1);
+      diff2 = meeting2 - nowCET;
+    }
+
+    function formatDiff(diff) {
+      const totalSeconds = Math.floor(diff / 1000);
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+    }
+
+    document.getElementById('countdown1').textContent = formatDiff(diff1);
+    document.getElementById('countdown2').textContent = formatDiff(diff2);
+  }
+  setInterval(updateMeetingTimes, 1000);
+  updateMeetingTimes();
+
+  /* Form submit */
+  (function(){
+    const form = document.getElementById('leadForm');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      window.location.href = 'https://partner.voidara.ai/register?ref=your-ai-assistant';
+    });
+  })();
+
+  /* Exit-intent popup */
+  (function(){
+    const popup = document.getElementById('exitPopup');
+    let shown = false;
+    document.addEventListener('mouseleave', function(e){
+      if(e.clientY < 0 && !shown){
+        popup.style.display = 'block';
+        shown = true;
+      }
+    });
+    window.closePopup = function(){ popup.style.display = 'none' }
+  })();
+
+</script>
+
 </body>
 </html>
